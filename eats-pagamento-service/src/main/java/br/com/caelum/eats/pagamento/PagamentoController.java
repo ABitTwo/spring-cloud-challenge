@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,8 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/pagamentos")
 @AllArgsConstructor
 class PagamentoController {
+	
+	private static final Logger log = LoggerFactory.getLogger(PagamentoController.class);
 
 	private PagamentoRepository pagamentoRepo;
 	private ClienteRestDoPedido pedidoCliente;
@@ -42,16 +46,20 @@ class PagamentoController {
 
 	@PostMapping
 	ResponseEntity<PagamentoDto> cria(@RequestBody Pagamento pagamento, UriComponentsBuilder uriBuilder) {
+		log.info("inicio ciacao pagamento");
 		pagamento.setStatus(Pagamento.Status.CRIADO);
 		Pagamento salvo = pagamentoRepo.save(pagamento);
 		URI path = uriBuilder.path("/pagamentos/{id}").buildAndExpand(salvo.getId()).toUri();
+		log.info("fim ciacao pagamento");
 		return ResponseEntity.created(path).body(new PagamentoDto(salvo));
 	}
 
 	@PutMapping("/{id}")
 	PagamentoDto confirma(@PathVariable("id") Long id) {
 		Pagamento pagamento = pagamentoRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+		log.info("Setando status pagamento");
 		pagamento.setStatus(Pagamento.Status.CONFIRMADO);
+		log.info("chamando metodo atualizar status");
 		pedidoCliente.notificaPagamentoDoPedido(pagamento.getPedidoId());
 		pagamentoRepo.save(pagamento);
 		return new PagamentoDto(pagamento);

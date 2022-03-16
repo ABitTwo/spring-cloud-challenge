@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,8 @@ import lombok.AllArgsConstructor;
 @RestController
 @AllArgsConstructor
 class PedidoController {
+	
+	private static final Logger log = LoggerFactory.getLogger(PedidoController.class);
 
 	private PedidoRepository repo;
 
@@ -37,19 +41,24 @@ class PedidoController {
 
 	@PostMapping("/pedidos")
 	PedidoDto adiciona(@RequestBody Pedido pedido) {
+		log.info("inicio da criacao do pedido");
 		pedido.setDataHora(LocalDateTime.now());
 		pedido.setStatus(Pedido.Status.REALIZADO);
 		pedido.getItens().forEach(item -> item.setPedido(pedido));
 		pedido.getEntrega().setPedido(pedido);
 		Pedido salvo = repo.save(pedido);
+		log.info("fim da criacao do pedido");
 		return new PedidoDto(salvo);
 	}
 
 	@PutMapping("/pedidos/{pedidoId}/status")
 	PedidoDto atualizaStatus(@PathVariable Long pedidoId, @RequestBody Pedido pedidoParaAtualizar) {
+		
+		log.info("inicio da atualizao do status");
 		Pedido pedido = repo.porIdComItens(pedidoId).orElseThrow(ResourceNotFoundException::new);
 		pedido.setStatus(pedidoParaAtualizar.getStatus());
 		repo.atualizaStatus(pedido.getStatus(), pedido);
+		log.info("fim da atualizao do status");
 		return new PedidoDto(pedido);
 	}
 

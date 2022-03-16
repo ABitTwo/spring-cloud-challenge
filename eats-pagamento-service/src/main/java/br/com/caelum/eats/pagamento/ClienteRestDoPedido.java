@@ -1,5 +1,7 @@
 package br.com.caelum.eats.pagamento;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,8 @@ public class ClienteRestDoPedido {
 //    private final String monolitoUrl;
 //    private final RestTemplate restTemplate;
 	
+	private static final Logger log = LoggerFactory.getLogger(ClienteRestDoPedido.class);
+	
 	@Autowired
 	MonolitoClient client;
 
@@ -22,7 +26,7 @@ public class ClienteRestDoPedido {
 
     void notificaPagamentoDoPedido(Long pedidoId) {
     	
-    	
+    	log.info("chamando o monolito");
     	client.atualizaStatus(pedidoId, new PedidoMudancaDeStatusRequest("PAGO"));
     	
     	
